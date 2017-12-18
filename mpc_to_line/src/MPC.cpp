@@ -11,7 +11,7 @@ namespace plt = matplotlibcpp;
 using CppAD::AD;
 
 // Set N and dt
-size_t N = 10;
+size_t N = 15;
 double dt = 0.1;
 
 // This value assumes the model presented in the classroom is used.
@@ -58,17 +58,21 @@ class FG_eval {
 
     // Reference State Cost
 	 for (int t = 0; t < N; t++) {
-		fg[0] += pow(vars[cte_start + t], 2);
-		fg[0] += pow(vars[epsi_start + t], 2);
-		fg[0] += pow(ref_v - vars[v_start + t], 2);
+		fg[0] += CppAD::pow(vars[cte_start + t], 2);
+		fg[0] += CppAD::pow(vars[epsi_start + t], 2);
+		fg[0] += CppAD::pow(ref_v - vars[v_start + t], 2);
 	 }
+	 
+	 // Actuator cost
 	 for (int t = 0; t < N-1; t++){
-		fg[0] += pow(vars[delta_start + t], 2);
-		fg[0] += pow(vars[a_start + t], 2);
+		fg[0] += CppAD::pow(vars[delta_start + t], 2);
+		fg[0] += CppAD::pow(vars[a_start + t], 2);
 	 }
+	 
+	 // Actuator rate cost
 	 for (int t = 0; t < N-2; t++){
-		fg[0] += pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-		fg[0] += pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+		fg[0] += 100*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+		fg[0] += 500*CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
 	 }
 
     //
@@ -95,7 +99,7 @@ class FG_eval {
 		AD<double> psi1 = vars[psi_start + t];
 		AD<double> v1 = vars[v_start + t];
 		AD<double> cte1 = vars[cte_start + t];
-      AD<double> epsi1 = vars[psi_start + t];
+      AD<double> epsi1 = vars[epsi_start + t];
 		
 		AD<double> x0 = vars[x_start + t - 1];
 		AD<double> y0 = vars[y_start + t - 1];
@@ -285,7 +289,7 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
 
 int main() {
   MPC mpc;
-  int iters = 50;
+  int iters = 60;
 
   Eigen::VectorXd ptsx(2);
   Eigen::VectorXd ptsy(2);
